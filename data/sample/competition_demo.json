@@ -1,0 +1,48 @@
+{
+  "_comment": "Синтетические демо-данные (не данные заказчика). Формат повторяет то, что сервис получает из API USN.",
+  "competitions": [
+    {
+      "id": "cup-challenge-classic",
+      "title": "Кубок Вызова · Классика (демо)",
+      "format": "classic",
+      "open_roles": {"player": true, "voter": true, "adviser": true, "viewer": true},
+      "deadlines": {
+        "player": "2030-03-19T23:59:00Z",
+        "voter": "2030-03-19T23:59:00Z",
+        "adviser": "2030-03-19T23:59:00Z",
+        "viewer": "2030-03-19T23:59:00Z"
+      },
+      "availability_blocks": [
+        {"id": "b1", "start": "2030-03-21T06:00:00Z", "end": "2030-03-21T08:30:00Z", "title": "Групповой этап, 1–2 круг"},
+        {"id": "b2", "start": "2030-03-21T09:00:00Z", "end": "2030-03-21T11:30:00Z", "title": "Групповой этап, 3 круг"},
+        {"id": "b3", "start": "2030-03-22T09:00:00Z", "end": "2030-03-22T11:30:00Z", "title": "1/2 финала"}
+      ]
+    },
+    {
+      "id": "cup-coop-team",
+      "title": "Кубок Сотрудничества · Командный (демо)",
+      "format": "team",
+      "open_roles": {"player": true, "voter": true, "adviser": false, "viewer": true},
+      "deadlines": {
+        "player": "2030-04-01T23:59:00Z",
+        "voter": "2030-04-02T23:59:00Z",
+        "viewer": "2030-04-02T23:59:00Z"
+      },
+      "availability_blocks": []
+    },
+    {
+      "id": "cup-strategy-express",
+      "title": "Кубок Стратегии · Экспресс (демо)",
+      "format": "express",
+      "open_roles": {"player": false, "voter": true, "adviser": false, "viewer": true},
+      "deadlines": {
+        "player": "2020-10-01T23:59:00Z",
+        "voter": "2030-10-08T23:59:00Z",
+        "viewer": "2030-10-08T23:59:00Z"
+      },
+      "availability_blocks": [
+        {"id": "e1", "start": "2030-10-10T06:00:00Z", "end": "2030-10-10T08:30:00Z", "title": "Групповой этап"}
+      ]
+    }
+  ]
+}
