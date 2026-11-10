@@ -85,13 +85,16 @@ def validate_application(
     if data.role == Role.VOTER:
         block_ids = {b.id for b in competition.availability_blocks}
         if not block_ids:
-            # Открытый вопрос к заказчику (В-19): блокировать или принимать без слотов.
-            raise RuleViolation("no_blocks", "Слоты для судей пока не открыты")
+            # Ошибка конфигурации: регистрация судей открыта без блоков доступности.
+            # По мнению заказчика (10.11), бэкенд USN не должен позволять так открыть регистрацию.
+            raise RuleViolation("config_no_blocks", "Регистрация судей временно недоступна — обратитесь к организатору")
         if not data.availability_block_ids:
             raise RuleViolation("voter_no_blocks", "Отметьте хотя бы один блок доступности")
         if not set(data.availability_block_ids) <= block_ids:
             raise RuleViolation("voter_bad_block", "Выбран несуществующий блок доступности")
 
+    # Напарника выбирают из всех пользователей USN, которые регистрировались как игрок,
+    # а не только из игроков этого турнира (заказчик, 10.11) — поэтому принадлежность к турниру не проверяем.
     if data.role == Role.PLAYER and data.partner_user_id is not None:
         if competition.format != CompetitionFormat.TEAM:
             raise RuleViolation("partner_not_team", "Напарник указывается только в командном формате")

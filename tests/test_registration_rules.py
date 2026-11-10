@@ -79,6 +79,29 @@ def test_partner_only_in_team_format(service):
     assert ok.partner_user_id == "p9"
 
 
+def test_judge_registration_without_blocks_is_config_error(service):
+    """Регистрация судей открыта, а блоков нет — ошибка конфигурации (заказчик, 10.11)."""
+    with pytest.raises(RuleViolation) as e:
+        service.submit(make(user="j1", comp="cup-coop-team", role=Role.VOTER, availability_block_ids=["x"]))
+    assert e.value.code == "config_no_blocks"
+
+
+def test_partner_may_be_any_usn_player_not_only_this_tournament(service):
+    """Напарник — из всех игроков USN, не обязательно уже заявленный на турнир (заказчик, 10.11)."""
+    app = service.submit(make(comp="cup-coop-team", partner_user_id="never-registered-here"))
+    assert app.partner_user_id == "never-registered-here"
+
+
+def test_received_application_is_editable_while_role_open(service):
+    """После «Получена» заявку можно редактировать, пока роль открыта (заказчик, 10.11)."""
+    app = service.submit(make())
+    again = make()
+    again.profile.intro = "Обновил представление"
+    edited = service.submit(again)
+    assert edited.id == app.id and edited.status == ApplicationStatus.RECEIVED
+    assert edited.profile.intro == "Обновил представление"
+
+
 def test_confirmed_application_stays_editable_while_role_open(service):
     app = service.submit(make())
     service.set_status(app.id, ApplicationStatus.CONFIRMED)
