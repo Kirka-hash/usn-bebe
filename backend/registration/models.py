@@ -25,9 +25,10 @@ class CompetitionFormat(str, Enum):
 
 
 class ApplicationStatus(str, Enum):
+    # «Получена» ставится, когда заявка прошла серверную проверку и API USN подтвердил сохранение.
+    # Резерв в MVP не входит — организатор работает с ним вручную в Telegram (заказчик, 10.11).
     RECEIVED = "received"     # Получена
     CONFIRMED = "confirmed"   # Подтверждена
-    RESERVE = "reserve"       # Резерв (участнику показываем как «Получена»)
     REJECTED = "rejected"     # Отклонена
     WITHDRAWN = "withdrawn"   # Отозвана участником
 
@@ -86,9 +87,3 @@ class Application(ApplicationIn):
     status: ApplicationStatus = ApplicationStatus.RECEIVED
     created_at: datetime
     updated_at: datetime
-
-    def participant_status(self) -> ApplicationStatus:
-        """Что видит участник: резерв не показываем (организатор сообщает лично)."""
-        if self.status == ApplicationStatus.RESERVE:
-            return ApplicationStatus.RECEIVED
-        return self.status

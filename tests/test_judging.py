@@ -29,16 +29,27 @@ def test_seven_judge_composition():
     assert counts == {H: 2, S: 3, O: 2}
 
 
-def test_deficit_returns_options_including_seven():
+def test_deficit_options_never_reduce_panel():
+    """Состав задан регламентом — ИИ не предлагает его сокращать (заказчик, 10.11)."""
     p = propose_panel([judge(i, 2, 2, 2) for i in range(5)], 9, 3)
     assert not p.complete and sum(p.missing.values()) == 4
     opts = deficit_options(p)
-    assert any("7 (2/3/2)" in o for o in opts)
+    assert not any("7" in o or "уменьш" in o.lower() for o in opts)
+    assert any("резервный судья" in o for o in opts)
 
 
-def test_conflict_of_interest_by_club_excluded():
-    pool = [judge(1, 3, 3, 3, club="СразуДа"), judge(2, 2, 2, 2, club="УШП")]
-    p = propose_panel(pool, 5, 0, conflict_clubs={"сразуда"})
+def test_express_uses_hard_negotiation_score():
+    """Экспресс: 5 судей, балл — столбец «жёсткие переговоры» (заказчик, 10.11)."""
+    pool = [JudgeCandidate(judge_id=f"JUDGE_{i:03d}", scores={S: 3, Collegium.EXPRESS: 1 + (i % 3)}) for i in range(8)]
+    p = propose_panel(pool, 5, 1)
+    assert p.complete and all(a.collegium == Collegium.EXPRESS for a in p.assignments)
+    assert sorted(a.score for a in p.assignments)[0] >= 2
+
+
+def test_conflict_of_interest_by_school_excluded_usn_neutral():
+    """Тренер–ученик определяется по названию школы; общая принадлежность к USN — не конфликт."""
+    pool = [judge(1, 3, 3, 3, club="СразуДа"), judge(2, 2, 2, 2, club="Универсальная школа переговоров")]
+    p = propose_panel(pool, 9, 0, conflict_clubs={"сразуда", "Универсальная школа переговоров"})
     assert [a.judge_id for a in p.assignments] == ["JUDGE_002"]
 
 

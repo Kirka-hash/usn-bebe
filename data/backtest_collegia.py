@@ -32,14 +32,14 @@ def load_scores(wb):
         d = {}
         for row in wb[name].iter_rows(min_row=2, values_only=True):
             if row[0] and J.search(str(row[0])):
-                d[J.search(str(row[0])).group()] = row[1:4]
+                d[J.search(str(row[0])).group()] = row[1:5]
         return d
 
     os_, ks = sheet("Оценки ОС"), sheet("Оценки КС")
     scores = {}
     for j in set(os_) | set(ks):
         s = {}
-        for i, col in enumerate(COLS):
+        for i, col in enumerate(COLS + [Collegium.EXPRESS]):
             vals = [float(x[j][i]) for x in (os_, ks) if j in x and x[j][i] is not None]
             if vals:
                 s[col] = st.mean(vals)
@@ -100,10 +100,10 @@ def main(path):
         for j, col in assigned:
             if j in scores and col in scores[j]:
                 hist.append(scores[j][col]); n_hist += 1
-                best_hist += scores[j][col] >= max(scores[j].values())
+                best_hist += scores[j][col] >= max(scores[j].get(c, 0) for c in COLS)
         for a in p.assignments:
             ours.append(a.score); n_ours += 1
-            best_ours += a.score >= max(scores[a.judge_id].values())
+            best_ours += a.score >= max(scores[a.judge_id].get(c, 0) for c in COLS)
     print(f"поединков (составы 9 и 7): {len(duels)}")
     print(f"средний балл в коллегии: ручная расстановка {st.mean(hist):.2f} | алгоритм {st.mean(ours):.2f}")
     print(f"доля судей в сильнейшей коллегии: ручная {100*best_hist/n_hist:.0f}% | алгоритм {100*best_ours/n_ours:.0f}%")
