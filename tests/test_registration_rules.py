@@ -86,10 +86,11 @@ def test_confirmed_application_stays_editable_while_role_open(service):
     assert edited.id == app.id  # правило сброса статуса — вопрос заказчику (В-18)
 
 
-def test_reserve_shown_to_participant_as_received(service):
+def test_new_application_status_is_received(service):
+    """«Получена» — после серверной проверки и успешного сохранения в USN. Резерва в MVP нет."""
     app = service.submit(make())
-    reserved = service.set_status(app.id, ApplicationStatus.RESERVE)
-    assert reserved.participant_status() == ApplicationStatus.RECEIVED
+    assert app.status == ApplicationStatus.RECEIVED
+    assert "reserve" not in {s.value for s in ApplicationStatus}
 
 
 def test_missing_consents_rejected(service):

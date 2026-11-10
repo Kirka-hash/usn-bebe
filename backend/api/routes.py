@@ -69,7 +69,7 @@ def submit(body: ApplicationIn):
         app = registration.submit(body)
     except RuleViolation as e:
         raise HTTPException(422, {"code": e.code, "message": e.message})
-    return {"id": app.id, "status": app.participant_status()}
+    return {"id": app.id, "status": app.status}
 
 
 # ---- Организатор (O2–O5) ----
@@ -96,7 +96,7 @@ class PanelRequest(BaseModel):
     candidates: list[JudgeCandidate]
     panel_size: int = 9
     reserve_size: int = 3
-    conflict_clubs: list[str] = []
+    conflict_clubs: list[str] = []  # школы/клубы игроков поединка (тренер–ученик — по названию школы)
 
 
 @router.post("/organizer/panel-proposal")
