@@ -15,6 +15,18 @@ def test_competitions_only_with_open_roles():
     assert {c["id"] for c in data} >= {"cup-challenge-classic", "cup-strategy-express"}
 
 
+def test_competition_card_and_my_applications():
+    assert client.get("/api/competitions/cup-challenge-classic").json()["format"] == "classic"
+    assert client.get("/api/competitions/nope").status_code == 404
+    body = {"competition_id": "cup-challenge-classic", "role": "viewer",
+            "profile": {"user_id": "smoke-u", "email": "s@example.com", "last_name": "Тест",
+                        "first_name": "Тест", "country": "Россия", "city": "Москва"},
+            "consents": {"rules": True, "pd": True, "media": True}}
+    assert client.post("/api/applications", json=body).status_code == 200
+    mine = client.get("/api/users/smoke-u/applications").json()
+    assert len(mine) == 1 and mine[0]["role"] == "viewer"
+
+
 def test_email_code_login_flow():
     from backend.api.deps import notifier
 

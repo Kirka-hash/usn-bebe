@@ -52,6 +52,21 @@ def competitions():
     return [c for c in usn.list_competitions() if any(c.open_roles.values())]
 
 
+@router.get("/competitions/{competition_id}")
+def competition(competition_id: str):
+    """U3: карточка турнира (формат, сроки по ролям, блоки доступности судей)."""
+    try:
+        return usn.get_competition(competition_id)
+    except KeyError:
+        raise HTTPException(404, "Соревнование не найдено")
+
+
+@router.get("/users/{user_id}/applications")
+def my_applications(user_id: str):
+    """U8/U9: все заявки пользователя по всем турнирам (статус, статус команды)."""
+    return [a for c in usn.list_competitions() for a in usn.list_applications(c.id) if a.profile.user_id == user_id]
+
+
 @router.get("/competitions/{competition_id}/roles")
 def roles(competition_id: str, user_id: str):
     """U4: доступность ролей с причиной для серых кнопок."""
