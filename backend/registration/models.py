@@ -82,8 +82,21 @@ class ApplicationIn(BaseModel):
     consents: dict[str, bool] = Field(default_factory=dict)  # rules, pd, media
 
 
+class TeamStatus(str, Enum):
+    """Статус команды в командном формате (сценарий согласован с заказчиком 17.11).
+
+    Игрок А указывает напарника Б → «ждёт подтверждения»; команда сформирована,
+    только когда Б подтвердит участие (или сам при регистрации выберет А).
+    """
+
+    AWAITING = "awaiting"     # Ждёт подтверждения напарника
+    CONFIRMED = "confirmed"   # Команда подтверждена обоими
+    DECLINED = "declined"     # Напарник отклонил / выбрал другого — нужно выбрать нового
+
+
 class Application(ApplicationIn):
     id: str
     status: ApplicationStatus = ApplicationStatus.RECEIVED
+    team_status: TeamStatus | None = None
     created_at: datetime
     updated_at: datetime

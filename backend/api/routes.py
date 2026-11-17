@@ -69,7 +69,37 @@ def submit(body: ApplicationIn):
         app = registration.submit(body)
     except RuleViolation as e:
         raise HTTPException(422, {"code": e.code, "message": e.message})
-    return {"id": app.id, "status": app.status}
+    return {"id": app.id, "status": app.status, "team_status": app.team_status}
+
+
+# ---- Командный формат: подтверждение напарником (U6a, U8) ----
+class TeamAction(BaseModel):
+    user_id: str      # кто подтверждает / отклоняет (второй игрок)
+    inviter_id: str   # кто указал его напарником
+
+
+@router.get("/competitions/{competition_id}/team-invitations")
+def team_invitations(competition_id: str, user_id: str):
+    return [{"inviter_id": a.profile.user_id, "inviter_name": f"{a.profile.last_name} {a.profile.first_name}"}
+            for a in registration.team_invitations(user_id, competition_id)]
+
+
+@router.post("/competitions/{competition_id}/team/confirm")
+def team_confirm(competition_id: str, body: TeamAction):
+    try:
+        app = registration.confirm_team(competition_id, body.user_id, body.inviter_id)
+    except RuleViolation as e:
+        raise HTTPException(422, {"code": e.code, "message": e.message})
+    return {"id": app.id, "team_status": app.team_status}
+
+
+@router.post("/competitions/{competition_id}/team/decline")
+def team_decline(competition_id: str, body: TeamAction):
+    try:
+        registration.decline_team(competition_id, body.user_id, body.inviter_id)
+    except RuleViolation as e:
+        raise HTTPException(422, {"code": e.code, "message": e.message})
+    return {"declined": True}
 
 
 # ---- Организатор (O2–O5) ----
