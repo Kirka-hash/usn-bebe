@@ -1,0 +1,67 @@
+.formatGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  background: var(--color-surface);
+}
+
+.legend {
+  font-size: var(--text-11);
+  font-weight: 500;
+  color: var(--color-ink-secondary);
+  padding: 0 4px;
+}
+
+.formatOption {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.formatOption input[type='radio'] {
+  accent-color: var(--color-navy);
+}
+
+.formatOption strong {
+  font-weight: 600;
+}
+
+.pairRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.pairRow > * {
+  flex: 1 1 180px;
+}
+
+.fieldWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 84px;
+  line-height: var(--leading-body);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}

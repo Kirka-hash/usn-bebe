@@ -1,0 +1,35 @@
+.chip {
+  display: inline-flex;
+  align-items: flex-start;
+  padding: var(--pad-chip-y) var(--pad-chip-x);
+  border-radius: var(--radius-chip);
+  font-size: var(--text-11);
+  font-weight: 500;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+.green {
+  background: var(--color-green-bg);
+  color: var(--color-green-text);
+}
+
+.gray {
+  background: var(--color-gray-bg);
+  color: var(--color-ink-secondary);
+}
+
+.blue {
+  background: var(--color-navy-soft);
+  color: var(--color-navy);
+}
+
+.warn {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+}
+
+.red {
+  background: var(--color-err-bg);
+  color: var(--color-err-text);
+}

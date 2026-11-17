@@ -1,0 +1,35 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.pageTitle {
+  font-size: var(--text-13);
+  font-weight: 600;
+  color: var(--color-ink);
+  padding: 2.5px 0;
+}
+
+/* Роли в одну строку с переносом — как в прототипе U1 */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.meta {
+  width: 100%;
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink-secondary);
+}
+
+.loading {
+  width: 100%;
+  padding: var(--pad-screen);
+  color: var(--color-ink-secondary);
+  font-size: var(--text-13);
+}

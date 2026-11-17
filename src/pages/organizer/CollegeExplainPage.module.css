@@ -1,0 +1,20 @@
+.reason {
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  width: 100%;
+}
+
+.cellCenter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-green-text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}

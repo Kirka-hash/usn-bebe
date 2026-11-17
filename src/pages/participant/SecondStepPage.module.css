@@ -1,0 +1,10 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.listNote {
+  width: 100%;
+}

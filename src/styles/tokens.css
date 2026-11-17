@@ -1,0 +1,59 @@
+/**
+ * Дизайн-токены платформы USN.
+ * Источник: прототип Figma «Поэкранная разбивка» (файл-копия k3Z73pdjXxpqPOzJ1miv42).
+ * Все значения выверены по коду фреймов Figma, не «примерно».
+ */
+
+:root {
+  /* Цвета */
+  --color-surface: #ffffff; /* карточки, инпуты, таблицы */
+  --color-screen: #f7f7fa; /* фон экрана-контейнера */
+  --color-page: #e9eaee; /* фон страницы вокруг экрана */
+  --color-border: #dbdee5; /* границы карточек и инпутов */
+  --color-ink: #171c29; /* основной текст */
+  --color-ink-secondary: #6b7380; /* вторичный текст */
+  --color-navy: #1c336b; /* акцент: кнопки, ссылки, шапки таблиц */
+  --color-navy-soft: #e5edfc; /* голубая плашка / soft-кнопка */
+  --color-green-bg: #e5f7eb; /* чип «роль открыта» */
+  --color-green-text: #218c4d;
+  --color-gray-bg: #ededf0; /* чип «недоступно» / disabled */
+  --color-warn-bg: #fff2b8; /* предупреждение */
+  --color-warn-text: #8c6b00;
+  --color-err-bg: #fcebeb; /* ошибка */
+  --color-err-text: #d93333;
+
+  /* Типографика (Inter, leading normal, как в макете) */
+  --font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-17: 17px;
+  --leading-tight: 1.25;
+  --leading-body: 17px;
+
+  /* Скругления */
+  --radius-screen: 16px; /* контейнер экрана */
+  --radius-card: 10px; /* белая карточка */
+  --radius-btn: 8px; /* кнопки */
+  --radius-chip: 12px; /* плашки */
+  --radius-input: 6px; /* поля ввода */
+  --radius-checkbox: 4px;
+  --radius-table: 8px;
+
+  /* Отступы */
+  --pad-screen: 20px; /* внутренние поля экрана */
+  --pad-card: 12px;
+  --pad-btn-x: 14px;
+  --pad-btn-y: 9px;
+  --pad-chip-x: 8px;
+  --pad-chip-y: 4px;
+  --pad-input-x: 10px;
+  --pad-input-y: 9px;
+  --gap-screen: 12px; /* вертикальный ритм экрана */
+  --gap-card: 6px;
+  --gap-row: 8px;
+
+  /* Формы */
+  --control-min-height: 39px; /* px14+py9+12px текст */
+}

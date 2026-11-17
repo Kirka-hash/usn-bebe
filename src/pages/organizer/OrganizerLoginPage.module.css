@@ -1,0 +1,22 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.hint {
+  width: 100%;
+  font-size: var(--text-12);
+  color: var(--color-ink-secondary);
+}
+
+.link {
+  color: var(--color-navy);
+  font-weight: 600;
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

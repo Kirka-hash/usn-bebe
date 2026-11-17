@@ -1,0 +1,74 @@
+.subtitle {
+  width: 100%;
+  font-size: var(--text-13);
+  color: var(--color-ink-secondary);
+}
+
+.scroll {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-table);
+}
+
+.matrixTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-table);
+  font-size: var(--text-12);
+  min-width: 760px;
+}
+
+.matrixTable th {
+  background: var(--color-navy-soft);
+  padding: 8px 10px;
+  font-weight: 600;
+  color: var(--color-navy);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.judgeCell {
+  text-align: left;
+  white-space: nowrap;
+  color: var(--color-ink);
+}
+
+.matrixTable td {
+  position: relative; /* содержащий блок для visually-hidden внутри ячейки — без выхода за скролл-контейнер */
+  padding: 7px 10px;
+  text-align: left;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-ink-secondary);
+}
+
+.totalRow td {
+  border-top: 2px solid var(--color-border);
+}
+
+.summaryLabel {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.summaryCell {
+  white-space: nowrap;
+}
+
+.issueLink {
+  text-decoration: none;
+}
+
+.moreRow {
+  color: var(--color-ink-secondary);
+  font-style: normal;
+  border-top: 1px solid var(--color-border);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}

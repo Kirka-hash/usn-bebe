@@ -1,0 +1,48 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.secondary {
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink-secondary);
+  width: 100%;
+}
+
+.value {
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+}
+
+.valueSecondary {
+  color: var(--color-ink-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Кнопки чуть компактнее по горизонтали — пара «Редактировать + Стать секундантом»
+   встаёт в одну строку на 390px, как в референсе U8 */
+.actions > * {
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
+.notFound {
+  width: 100%;
+}
