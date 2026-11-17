@@ -1,0 +1,28 @@
+.note {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.info {
+  width: 100%;
+}
+
+.or {
+  font-size: var(--text-12);
+  color: var(--color-ink-secondary);
+}
+
+.link {
+  color: var(--color-navy);
+  font-weight: 600;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

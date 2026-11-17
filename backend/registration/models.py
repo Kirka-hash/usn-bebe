@@ -62,6 +62,7 @@ class Profile(BaseModel):
     first_name: str = ""
     country: str = ""
     city: str = ""
+    phone: str = ""
     club: str = ""
     position: str = ""
     company: str = ""

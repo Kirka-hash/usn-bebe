@@ -1,0 +1,36 @@
+.subtitle {
+  width: 100%;
+  font-size: var(--text-13);
+  color: var(--color-ink-secondary);
+}
+
+.duelLink {
+  color: var(--color-navy);
+  font-weight: 500;
+}
+
+.duelLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chosenMark {
+  font-size: var(--text-12);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.invite {
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  width: 100%;
+  margin-bottom: var(--gap-row);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}

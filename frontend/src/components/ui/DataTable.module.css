@@ -1,0 +1,48 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-table);
+  font-size: var(--text-12);
+}
+
+.scroll {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-table);
+}
+
+thead th {
+  background: var(--color-navy-soft);
+  padding: 8px 10px;
+  font-weight: 600;
+  color: var(--color-navy);
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+tbody td {
+  padding: 8px 10px;
+  color: var(--color-ink);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+tbody tr:last-child td {
+  height: 100%;
+}
+
+.chipCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* На узких экранах таблица прокручивается горизонтально без ломания сетки */
+@media (max-width: 720px) {
+  .table {
+    min-width: 720px;
+  }
+}

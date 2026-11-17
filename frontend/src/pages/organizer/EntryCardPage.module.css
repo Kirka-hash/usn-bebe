@@ -1,0 +1,42 @@
+.secondary {
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink-secondary);
+  width: 100%;
+}
+
+.main {
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  width: 100%;
+}
+
+.availYes {
+  font-size: var(--text-12);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--pad-btn-y) var(--pad-btn-x);
+  border-radius: var(--radius-btn);
+  font-size: var(--text-12);
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

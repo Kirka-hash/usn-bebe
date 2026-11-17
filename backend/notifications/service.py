@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Protocol
 
 log = logging.getLogger("notifications")
@@ -23,4 +24,7 @@ class LogNotificationService:
 
     def send(self, to: str, subject: str, body: str) -> None:
         self.sent.append((to, subject, body))
-        log.info("notify %s: %s", to, subject)
+        if os.getenv("USN_MODE", "mock") == "mock":
+            log.warning("DEMO email to %s: %s — %s", to, subject, body)
+        else:
+            log.info("notify %s: %s", to, subject)

@@ -1,0 +1,67 @@
+.site {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-13);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.brandChip {
+  padding: 3px 8px;
+  background: var(--color-navy);
+  border-radius: var(--radius-chip);
+  color: #fff;
+  font-size: var(--text-11);
+  font-weight: 600;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.navLink {
+  padding: 6px 10px;
+  border-radius: var(--radius-btn);
+  font-size: var(--text-12);
+  font-weight: 600;
+  color: var(--color-ink-secondary);
+  transition: background-color 120ms ease;
+}
+
+.navLink:hover {
+  background: var(--color-navy-soft);
+  color: var(--color-navy);
+}
+
+.navLinkActive {
+  background: var(--color-navy-soft);
+  color: var(--color-navy);
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+}

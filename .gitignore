@@ -1,10 +1,54 @@
+# === Зависимости ===
 __pycache__/
 *.pyc
 .venv/
-.env
 .pytest_cache/
 node_modules/
-# данные заказчика — только локально
+.pnp
+.pnp.js
+
+# === Сборка (у тебя есть папка dist) ===
+dist/
+dist-ssr/
+*.local
+
+# === Секреты и переменные окружения ===
+.env
+.env.*
+!.env.example
+
+# === Логи ===
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# === Редакторы и IDE ===
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Vite / TS ===
+.vite/
+*.tsbuildinfo
+
+
+design-references/
+
+opencode.json
+
+# Данные заказчика хранятся локально
 data/private/
 *.xlsx
 *.pdf

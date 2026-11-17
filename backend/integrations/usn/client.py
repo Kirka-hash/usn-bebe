@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 from typing import Protocol
 
-from backend.registration.models import Application, Competition
+from backend.registration.models import Application, Competition, Profile, Role
 
 
 class USNClient(Protocol):
@@ -20,6 +20,9 @@ class USNClient(Protocol):
     def list_applications(self, competition_id: str) -> list[Application]: ...
     def get_application(self, application_id: str) -> Application | None: ...
     def save_application(self, app: Application) -> Application: ...
+    def get_profile(self, user_id: str) -> Profile | None: ...
+    def save_profile(self, profile: Profile) -> Profile: ...
+    def list_players(self, search: str = "") -> list[Profile]: ...
 
 
 class MockUSNClient:
@@ -30,6 +33,7 @@ class MockUSNClient:
         raw = json.loads(path.read_text(encoding="utf-8"))
         self._competitions = {c["id"]: Competition(**c) for c in raw["competitions"]}
         self._applications: dict[str, Application] = {}
+        self._profiles: dict[str, Profile] = {}
 
     def list_competitions(self) -> list[Competition]:
         return list(self._competitions.values())
@@ -45,7 +49,22 @@ class MockUSNClient:
 
     def save_application(self, app: Application) -> Application:
         self._applications[app.id] = app
+        self._profiles[app.profile.user_id] = app.profile
         return app
+
+    def get_profile(self, user_id: str) -> Profile | None:
+        return self._profiles.get(user_id)
+
+    def save_profile(self, profile: Profile) -> Profile:
+        self._profiles[profile.user_id] = profile
+        return profile
+
+    def list_players(self, search: str = "") -> list[Profile]:
+        ids = {a.profile.user_id for a in self._applications.values()
+               if a.role == Role.PLAYER and a.status.value != "withdrawn"}
+        query = search.strip().lower()
+        return [p for uid, p in self._profiles.items() if uid in ids
+                and query in f"{p.last_name} {p.first_name} {p.city}".lower()]
 
 
 class HttpUSNClient:

@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
 from backend.judging.availability import availability_map
 from backend.judging.collegia import JudgeCandidate, propose_panel
 from backend.ai_advisor.explainer import deficit_options, explain
-from backend.registration.models import ApplicationIn, ApplicationStatus, Role
+from backend.registration.models import ApplicationIn, ApplicationStatus, Profile, Role
 from backend.registration.rules import RuleViolation, role_unavailable_reason
 
 from .deps import auth, registration, usn
@@ -42,7 +42,27 @@ def verify(body: CodeIn):
     token = auth.verify(body.email, body.code)
     if not token:
         raise HTTPException(401, "Неверный код")
-    return {"token": token}
+    return {"token": token, "user_id": auth.user_id(body.email)}
+
+
+def current_identity(authorization: str | None) -> tuple[str, str]:
+    token = authorization.removeprefix("Bearer ") if authorization else ""
+    email = auth.user_email(token)
+    if not email:
+        raise HTTPException(401, "Сначала войдите по email")
+    return auth.user_id(email), email
+
+
+@router.get("/auth/me")
+def me(authorization: str | None = Header(default=None)):
+    user_id, email = current_identity(authorization)
+    return {"user_id": user_id, "email": email, "profile": usn.get_profile(user_id)}
+
+
+@router.put("/users/me/profile")
+def save_profile(profile: Profile, authorization: str | None = Header(default=None)):
+    user_id, email = current_identity(authorization)
+    return usn.save_profile(profile.model_copy(update={"user_id": user_id, "email": email}))
 
 
 # ---- Участник (U1, U3, U4, U7, U8) ----
@@ -67,6 +87,19 @@ def my_applications(user_id: str):
     return [a for c in usn.list_competitions() for a in usn.list_applications(c.id) if a.profile.user_id == user_id]
 
 
+@router.get("/players")
+def players(search: str = "", competition_id: str | None = None,
+            authorization: str | None = Header(default=None)):
+    current_identity(authorization)
+    profiles = usn.list_players(search)
+    if competition_id:
+        registered = {a.profile.user_id for a in usn.list_applications(competition_id)
+                      if a.role == Role.PLAYER and a.status != ApplicationStatus.WITHDRAWN}
+        profiles = [p for p in profiles if p.user_id in registered]
+    return [{"id": p.user_id, "name": f"{p.last_name} {p.first_name}".strip(),
+             "club": p.club, "city": p.city} for p in profiles]
+
+
 @router.get("/competitions/{competition_id}/roles")
 def roles(competition_id: str, user_id: str):
     """U4: доступность ролей с причиной для серых кнопок."""
@@ -85,6 +118,15 @@ def submit(body: ApplicationIn):
     except RuleViolation as e:
         raise HTTPException(422, {"code": e.code, "message": e.message})
     return {"id": app.id, "status": app.status, "team_status": app.team_status}
+
+
+@router.post("/applications/{application_id}/withdraw")
+def withdraw(application_id: str, authorization: str | None = Header(default=None)):
+    user_id, _ = current_identity(authorization)
+    try:
+        return registration.withdraw(application_id, user_id)
+    except RuleViolation as e:
+        raise HTTPException(404, {"code": e.code, "message": e.message})
 
 
 # ---- Командный формат: подтверждение напарником (U6a, U8) ----

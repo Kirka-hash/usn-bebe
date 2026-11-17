@@ -1,0 +1,34 @@
+.subtitle {
+  width: 100%;
+  font-size: var(--text-13);
+  color: var(--color-ink-secondary);
+}
+
+.topRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.panelList {
+  white-space: normal;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-row);
+  width: 100%;
+}
+
+.hint {
+  width: 100%;
+  font-size: var(--text-12);
+}
+
+.hint a {
+  color: var(--color-navy);
+  font-weight: 500;
+}

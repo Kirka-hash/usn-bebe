@@ -119,3 +119,11 @@ class RegistrationService:
         if app is None:
             raise RuleViolation("not_found", "Заявка не найдена")
         return self.usn.save_application(app.model_copy(update={"status": status}))
+
+    def withdraw(self, application_id: str, user_id: str) -> Application:
+        app = self.usn.get_application(application_id)
+        if app is None or app.profile.user_id != user_id:
+            raise RuleViolation("not_found", "Заявка не найдена")
+        return self.usn.save_application(app.model_copy(update={
+            "status": ApplicationStatus.WITHDRAWN, "updated_at": datetime.now(timezone.utc),
+        }))

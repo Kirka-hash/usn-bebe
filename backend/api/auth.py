@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import secrets
+import uuid
 
 from backend.notifications.service import NotificationService
 
@@ -31,3 +32,7 @@ class EmailCodeAuth:
 
     def user_email(self, token: str) -> str | None:
         return self._sessions.get(token)
+
+    @staticmethod
+    def user_id(email: str) -> str:
+        return str(uuid.uuid5(uuid.NAMESPACE_URL, f"usn-email:{email.strip().lower()}"))
