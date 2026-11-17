@@ -8,3 +8,10 @@ node_modules/
 data/private/
 *.xlsx
 *.pdf
+
+node_modules/
+dist/
+.vite/
+design-references/
+opencode.json
+.env
