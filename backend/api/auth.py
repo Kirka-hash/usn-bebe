@@ -33,6 +33,33 @@ class EmailCodeAuth:
     def user_email(self, token: str) -> str | None:
         return self._sessions.get(token)
 
+    def logout(self, token: str) -> None:
+        self._sessions.pop(token, None)
+
     @staticmethod
     def user_id(email: str) -> str:
         return str(uuid.uuid5(uuid.NAMESPACE_URL, f"usn-email:{email.strip().lower()}"))
+
+
+class OrganizerAuth:
+    """Отдельные сессии организатора для прототипа."""
+
+    def __init__(self, email: str, password: str):
+        self.email = email.strip().lower()
+        self._password = password.encode()
+        self._sessions: set[str] = set()
+
+    def login(self, email: str, password: str) -> str | None:
+        if not self._password or email.strip().lower() != self.email:
+            return None
+        if not secrets.compare_digest(password.encode(), self._password):
+            return None
+        token = secrets.token_urlsafe(32)
+        self._sessions.add(token)
+        return token
+
+    def accepts(self, token: str) -> bool:
+        return token in self._sessions
+
+    def logout(self, token: str) -> None:
+        self._sessions.discard(token)

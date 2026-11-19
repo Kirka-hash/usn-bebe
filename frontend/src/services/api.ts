@@ -2,7 +2,7 @@ import type { Application, ApplicationForm, Profile, Role, Tournament, Tournamen
 
 const BASE = import.meta.env.VITE_API_URL || '/api';
 const SESSION_KEY = 'usn.session';
-const ORGANIZER_KEY = 'usn.organizer.demo';
+const ORGANIZER_KEY = 'usn.organizer.token';
 const ROLE_TO_API: Record<Role, string> = { player: 'player', judge: 'voter', second: 'adviser', viewer: 'viewer' };
 const API_TO_ROLE: Record<string, Role> = { player: 'player', voter: 'judge', adviser: 'second', viewer: 'viewer' };
 
@@ -14,11 +14,13 @@ interface ApiProfile {
 }
 interface ApiCompetition {
   id: string; title: string; format: Tournament['format']; open_roles: Record<string, boolean>;
-  deadlines: Record<string, string>; availability_blocks: Array<{ id: string; start: string; end: string; title: string }>;
+  deadlines: Record<string, string>; days?: string[]; starts_at?: string | null; mode?: string; review_demo?: boolean;
+  availability_blocks: Array<{ id: string; start: string; end: string; title: string; available?: number | null; parallel_duels?: number | null; panel_size?: number | null; reserve?: number | null }>;
 }
 interface ApiPlayer { id: string; name: string; club?: string; city?: string }
 interface ApiApplication {
   id: string; competition_id: string; role: string; profile: ApiProfile; status: Application['status'];
+  judge_scores?: Record<string, number>;
   team_status?: Application['teamStatus']; partner_user_id?: string | null;
   advised_player_ids: string[]; availability_block_ids: string[]; created_at: string; updated_at: string;
 }
@@ -34,10 +36,10 @@ function session(): Session | null {
 export function currentUserId(): string | null { return session()?.userId ?? null; }
 export function isSignedIn(): boolean { return Boolean(session()); }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, init: RequestInit = {}, scope: 'participant' | 'organizer' = 'participant'): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body) headers.set('Content-Type', 'application/json');
-  const token = session()?.token;
+  const token = scope === 'organizer' ? sessionStorage.getItem(ORGANIZER_KEY) : session()?.token;
   if (token) headers.set('Authorization', `Bearer ${token}`);
   let response: Response;
   try { response = await fetch(`${BASE}${path}`, { ...init, headers }); }
@@ -51,7 +53,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>;
 }
 const json = (body: unknown): RequestInit => ({ method: 'POST', body: JSON.stringify(body) });
-const date = (value?: string): string => value ? new Date(value).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) : '—';
+const date = (value?: string): string => value ? new Date(value).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', timeZone: 'UTC' }) : '—';
 const time = (value: string): string => new Date(value).toISOString().slice(11, 16);
 
 function mapProfile(p: ApiProfile): Profile {
@@ -68,23 +70,39 @@ function toApiProfile(form: ApplicationForm, userId: string, email: string): Api
 function mapApplication(a: ApiApplication): Application {
   return { id: a.id, tournamentId: a.competition_id, userId: a.profile.user_id,
     role: API_TO_ROLE[a.role] || 'viewer', status: a.status, teamStatus: a.team_status || undefined,
-    form: mapProfile(a.profile), partnerId: a.partner_user_id || undefined,
+    form: mapProfile(a.profile), email: a.profile.email, judgeScores: a.judge_scores,
+    publicId: a.role === 'voter' && /^review-\d+$/.test(a.id) ? `JUDGE_${a.id.slice(7).padStart(3, '0')}` : undefined, partnerId: a.partner_user_id || undefined,
     secondingPlayerIds: a.advised_player_ids, availabilityBlockIds: a.availability_block_ids,
     createdAt: a.created_at, updatedAt: a.updated_at, history: [] };
 }
 function mapTournament(c: ApiCompetition, players: TournamentPlayer[] = []): Tournament {
   const firstBlock = c.availability_blocks[0];
+  const selectableBlocks = c.availability_blocks.filter(block => block.available !== 0);
   const firstDeadline = Object.values(c.deadlines)[0];
   const roles: Role[] = ['player', 'judge', 'second', 'viewer'];
-  return { id: c.id, name: c.title, format: c.format,
-    dates: date(firstBlock?.start || firstDeadline), timeUtc: firstBlock ? `${time(firstBlock.start)} UTC` : '—',
-    mode: 'Уточняется организатором', description: `${c.title}\nФормат: ${c.format}.`,
-    roleWindows: roles.map(role => ({ role, open: Boolean(c.open_roles[ROLE_TO_API[role]]),
-      deadline: date(c.deadlines[ROLE_TO_API[role]]),
-      closedReason: c.open_roles[ROLE_TO_API[role]] ? undefined : 'Регистрация закрыта' })),
-    availabilityBlocks: c.availability_blocks.map(b => ({ id: b.id,
+  const days = c.days?.map(day => date(day)) ?? [];
+  const firstDay = days[0];
+  const lastDay = days.at(-1);
+  const dates = firstDay && lastDay && firstDay !== lastDay
+    ? (firstDay.slice(3) === lastDay.slice(3) ? firstDay.slice(0, 2) : firstDay) + '–' + lastDay
+    : firstDay ?? date(firstBlock?.start || firstDeadline);
+  const startsAt = c.starts_at || firstBlock?.start;
+  const timeUtc = startsAt ? `${time(startsAt)} UTC` : '';
+  const mode = c.mode ?? '';
+  const format = { classic: 'Классика', team: 'Командный', express: 'Экспресс' }[c.format];
+  return { id: c.id, name: c.title.replace(/ \(демо\)$/, ''), format: c.format,
+    dates, timeUtc, mode, reviewDemo: c.review_demo,
+    description: [`Формат: ${format}`, [dates, timeUtc, mode].filter(value => value && value !== '—').join(' · ')].filter(Boolean).join('\n'),
+    roleWindows: roles.map(role => {
+      const unsuitable = role === 'second' && c.format !== 'classic';
+      const open = !unsuitable && Boolean(c.open_roles[ROLE_TO_API[role]]);
+      return { role, open, deadline: c.deadlines[ROLE_TO_API[role]] ? date(c.deadlines[ROLE_TO_API[role]]) : '',
+        labelSuffix: role === 'player' && c.format === 'team' ? '(команда из 2)' : undefined,
+        closedReason: unsuitable ? 'Только для классики' : open ? undefined : 'Регистрация закрыта' };
+    }),
+    availabilityBlocks: selectableBlocks.map(b => ({ id: b.id,
       time: `${date(b.start)} ${time(b.start)}–${time(b.end)}`, title: b.title,
-      parallelDuels: 0, panelSize: c.format === 'express' ? 5 : 9, reserve: 0 })), players };
+      parallelDuels: b.parallel_duels ?? 0, panelSize: b.panel_size ?? (c.format === 'express' ? 5 : 9), reserve: b.reserve ?? 0 })), players };
 }
 function mapPlayer(p: ApiPlayer, competitionId?: string): TournamentPlayer {
   return { id: p.id, name: p.name, club: p.club,
@@ -118,14 +136,17 @@ export async function login(email: string, code: string, lastName = '', firstNam
   if (profile) return profile;
   return saveProfile({ lastName, firstName, country: '', city: '' });
 }
-export function logout(): void { sessionStorage.removeItem(SESSION_KEY); }
+export async function logout(): Promise<void> {
+  try { if (session()) await request('/auth/logout', json({})); }
+  finally { sessionStorage.removeItem(SESSION_KEY); }
+}
 export async function getProfile(): Promise<Profile | null> {
   if (!session()) return null;
   try {
     const me = await request<{ profile: ApiProfile | null }>('/auth/me');
     return me.profile ? mapProfile(me.profile) : null;
   } catch (error) {
-    if (error instanceof ApiError && error.code === '401') { logout(); return null; }
+    if (error instanceof ApiError && error.code === '401') { sessionStorage.removeItem(SESSION_KEY); return null; }
     throw error;
   }
 }
@@ -143,9 +164,10 @@ export async function getApplications(): Promise<Application[]> {
   return (await request<ApiApplication[]>(`/users/${current.userId}/applications`)).map(mapApplication);
 }
 export async function getOrganizerApplications(): Promise<Application[]> {
+  if (!sessionStorage.getItem(ORGANIZER_KEY)) return [];
   const competitions = await request<ApiCompetition[]>('/competitions');
   const groups = await Promise.all(competitions.map(c => request<ApiApplication[]>(
-    `/organizer/competitions/${encodeURIComponent(c.id)}/applications`)));
+    `/organizer/competitions/${encodeURIComponent(c.id)}/applications`, {}, 'organizer')));
   return groups.flat().map(mapApplication);
 }
 export async function findApplication(tournamentId: string): Promise<Application | undefined> {
@@ -196,19 +218,54 @@ export async function answerTeamInvitation(tournamentId: string, inviterId: stri
 }
 
 export interface OrganizerAuth { email: string }
-export const DEMO_ORGANIZER = { email: 'organizer@usn.demo', password: 'organizer' };
 export async function getOrganizerAuth(): Promise<OrganizerAuth | null> {
-  return sessionStorage.getItem(ORGANIZER_KEY) ? { email: DEMO_ORGANIZER.email } : null;
+  if (!sessionStorage.getItem(ORGANIZER_KEY)) return null;
+  try {
+    return await request<OrganizerAuth>('/organizer/me', {}, 'organizer');
+  } catch (error) {
+    if (!(error instanceof ApiError) || error.code !== '401') throw error;
+    sessionStorage.removeItem(ORGANIZER_KEY);
+    return null;
+  }
 }
 export async function organizerLogin(email: string, password: string): Promise<OrganizerAuth> {
-  if (email.trim().toLowerCase() !== DEMO_ORGANIZER.email || password !== DEMO_ORGANIZER.password)
-    throw new ApiError('bad-credentials', 'Неверный демо-доступ');
-  sessionStorage.setItem(ORGANIZER_KEY, 'true');
-  return { email: DEMO_ORGANIZER.email };
+  const result = await request<OrganizerAuth & { token: string }>('/organizer/login', json({ email, password }), 'organizer');
+  sessionStorage.setItem(ORGANIZER_KEY, result.token);
+  return { email: result.email };
 }
-export function organizerLogout(): void { sessionStorage.removeItem(ORGANIZER_KEY); }
+export async function organizerLogout(): Promise<void> {
+  try {
+    if (sessionStorage.getItem(ORGANIZER_KEY)) await request('/organizer/logout', json({}), 'organizer');
+  } finally {
+    sessionStorage.removeItem(ORGANIZER_KEY);
+  }
+}
 export async function setEntryStatus(applicationId: string, status: Application['status']): Promise<Application> {
   const result = await request<ApiApplication>(
-    `/organizer/applications/${encodeURIComponent(applicationId)}/status?status=${status}`, json({}));
+    `/organizer/applications/${encodeURIComponent(applicationId)}/status?status=${status}`, json({}), 'organizer');
   return mapApplication(result);
+}
+
+export interface ReviewAssignment {
+  judge_id: string; collegium: string; score: number; reasons: string[];
+}
+export interface ReviewPlan {
+  id: string; title: string; start: string; complete: boolean;
+  judge_scores: Record<string, Record<string, number>>;
+  reserve_scores: Record<string, Record<string, number>>;
+  proposal: { assignments: ReviewAssignment[]; reserve: string[]; missing: Record<string, number> };
+}
+export interface ReviewIssue {
+  game_id: string; block_id: string; needed: number; suggestions: { id: string; label: string }[];
+  can_resolve: boolean;
+}
+export interface ReviewState {
+  plans: ReviewPlan[]; issues: ReviewIssue[]; panel_size: number; reserve: number;
+}
+export async function getReview(id: string): Promise<ReviewState | null> {
+  try { return await request<ReviewState>(`/organizer/competitions/${encodeURIComponent(id)}/review`, {}, 'organizer'); }
+  catch (e) { if (e instanceof ApiError && e.code === '404') return null; throw e; }
+}
+export function applyReview(id: string, game: string): Promise<ReviewState> {
+  return request(`/organizer/competitions/${encodeURIComponent(id)}/review/${encodeURIComponent(game)}/apply`, json({}), 'organizer');
 }

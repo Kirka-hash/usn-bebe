@@ -64,7 +64,7 @@ export function EntriesPage() {
   const rows: EntryRow[] = useMemo(() => {
     const groups = new Map<string, Application[]>();
     for (const a of entries) {
-      const key = `${a.form.lastName} ${a.form.firstName}`.trim().toLowerCase();
+      const key = a.userId;
       const list = groups.get(key) ?? [];
       list.push(a);
       groups.set(key, list);
@@ -84,11 +84,11 @@ export function EntriesPage() {
         links =
           secondEntry.secondingPlayerIds.length > 0
             ? `секундирует: ${secondEntry.secondingPlayerIds
-                .map((pid) => USN_PLAYERS.find((p) => p.id === pid)?.name ?? tournament?.players.find((p) => p.id === pid)?.name ?? pid)
+                .map((pid) => USN_PLAYERS.find((p) => p.id === pid)?.name ?? tournament?.players.find((p) => p.id === pid)?.name ?? entries.find(a => a.userId === pid)?.form.displayName ?? pid)
                 .map(shortName)
                 .join(', ')}`
             : '—';
-      } else if (playerEntry) {
+      } else if (playerEntry && tournament?.format === 'team') {
         links = playerEntry.teamStatus === 'confirmed' ? 'Команда подтверждена' :
           playerEntry.teamStatus === 'awaiting' ? 'Команда: ждёт подтверждения' :
           playerEntry.teamStatus === 'declined' ? 'Напарник отклонил' :
@@ -189,7 +189,7 @@ export function EntriesPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Заявки турнира" />
+      <ScreenHeader code="O2" title="Заявки турнира" />
       <p className={styles.subtitle}>{tournament ? `${tournament.name} · ${tournament.dates}` : ''}</p>
 
       <OrganizerTabs tournamentId={id} active="entries" />

@@ -11,6 +11,9 @@ class Settings:
     usn_api_url: str = os.getenv("USN_API_URL", "")
     usn_api_user: str = os.getenv("USN_API_USER", "")
     usn_api_password: str = os.getenv("USN_API_PASSWORD", "")
+    review_demo: bool = os.getenv("USN_REVIEW_DEMO", "0") == "1"
+    organizer_email: str = os.getenv("ORGANIZER_EMAIL", "organizer@usn.demo")
+    organizer_password: str = os.getenv("ORGANIZER_PASSWORD", "")
     llm_api_key: str = os.getenv("LLM_API_KEY", "")
     database_url: str = os.getenv("DATABASE_URL", "")
 

@@ -4,6 +4,7 @@ import type { Role, Tournament } from '@/types';
 import { ROLE_LABELS } from '@/data/mock';
 import * as api from '@/services/api';
 import { Screen, ScreenHeader } from '@/components/ui/Screen';
+import { ArrowIcon } from '@/components/ui/icons';
 import { Button } from '@/components/ui/Button';
 import { Note } from '@/components/ui/Note';
 import { useApp } from '@/state/AppContext';
@@ -15,6 +16,13 @@ const ROLE_ACTION: Record<Role, string> = {
   judge: 'оцениваю поединки',
   second: 'помогаю игроку',
   viewer: 'смотрю трансляцию',
+};
+
+const ROLE_ICON: Record<Role, string> = {
+  player: 'M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M14 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
+  judge: 'M12 3v17M7 21h10M4 7h16M6 7l-3 8h6L6 7Zm12 0-3 8h6l-3-8Z',
+  second: 'M4 4h16v12H9l-5 4V4Z',
+  viewer: 'M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6Zm13 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0Z',
 };
 
 /**
@@ -32,12 +40,13 @@ export function RoleSelectPage() {
 
   useEffect(() => {
     let alive = true;
+    setLoading(true);
     api.getTournament(id ?? '').then((t) => {
       if (alive) {
         setTournament(t ?? null);
         setLoading(false);
       }
-    });
+    }).catch(() => { if (alive) { setTournament(null); setLoading(false); } });
     return () => {
       alive = false;
     };
@@ -46,7 +55,7 @@ export function RoleSelectPage() {
   if (loading) {
     return (
       <Screen>
-        <ScreenHeader title="Выбор роли" />
+        <ScreenHeader code="U4" title="Выбор роли" />
         <Note variant="info">Загрузка…</Note>
       </Screen>
     );
@@ -55,7 +64,7 @@ export function RoleSelectPage() {
   if (!tournament) {
     return (
       <Screen>
-        <ScreenHeader title="Выбор роли" />
+        <ScreenHeader code="U4" title="Выбор роли" />
         <Note variant="err">Турнир не найден.</Note>
         <div className={styles.roles}>
           <Button variant="soft" to="/" arrowLeft>
@@ -88,35 +97,41 @@ export function RoleSelectPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Выбор роли" />
+      <ScreenHeader code="U4" title="Выбор роли" />
 
+      <div>
+        <p className={styles.tournament}>{tournament.name}</p>
+        <p className={styles.hint}>
+          В одном турнире — одна роль. Игрок также может быть секундантом другого игрока.
+          {tournament.format === 'team' && ' После выбора роли игрока откроется выбор напарника.'}
+        </p>
+      </div>
       <div className={styles.roles}>
-        {tournament.roleWindows.map((window) => {
+        {([...tournament.roleWindows].sort((a, b) =>
+          Number(blockedReasons.has(a.role)) - Number(blockedReasons.has(b.role))
+        )).map((window) => {
           const reason = blockedReasons.get(window.role);
-          if (reason) {
-            return (
-              <Button key={window.role} variant="muted" aria-disabled="true">
-                {`${ROLE_LABELS[window.role]} — ${reason}`}
-              </Button>
-            );
-          }
+          const deadline = window.deadline && window.deadline !== '—' ? ` · до ${window.deadline}` : '';
           return (
-            <Button key={window.role} onClick={() => go(window.role)} arrow>
-              {`${ROLE_LABELS[window.role]} — ${ROLE_ACTION[window.role]}`}
-            </Button>
+            <button type="button" key={window.role} className={styles.role} disabled={Boolean(reason)}
+              onClick={() => go(window.role)}>
+              <span className={styles.icon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d={ROLE_ICON[window.role]} />
+                </svg>
+              </span>
+              <span className={styles.roleText}>
+                <strong>{ROLE_LABELS[window.role]}</strong>
+                <small>{reason || `${ROLE_ACTION[window.role]}${deadline}`}</small>
+              </span>
+              {reason ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+                : <ArrowIcon />}
+            </button>
           );
         })}
       </div>
-
-      <p className={styles.hint}>
-        Игрок или команда — определяем по типу соревнования: в командном турнире после «Игрок» откроется
-        шаг «Напарник» (U6a).
-      </p>
-
-      <Note variant="info">
-        Недоступные роли показываются серыми с причиной: регистрация закрыта, роль не для этого формата,
-        несовместима с уже поданной заявкой или судейские слоты ещё не открыты.
-      </Note>
     </Screen>
   );
 }

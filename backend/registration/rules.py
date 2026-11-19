@@ -92,6 +92,9 @@ def validate_application(
             raise RuleViolation("voter_no_blocks", "Отметьте хотя бы один блок доступности")
         if not set(data.availability_block_ids) <= block_ids:
             raise RuleViolation("voter_bad_block", "Выбран несуществующий блок доступности")
+        full_blocks = {b.id for b in competition.availability_blocks if b.available == 0}
+        if full_blocks.intersection(data.availability_block_ids):
+            raise RuleViolation("voter_full_block", "В выбранном блоке доступности нет мест")
 
     # Напарника выбирают из всех пользователей USN, которые регистрировались как игрок,
     # а не только из игроков этого турнира (заказчик, 10.11) — поэтому принадлежность к турниру не проверяем.

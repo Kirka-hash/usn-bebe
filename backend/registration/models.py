@@ -5,7 +5,7 @@
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -44,6 +44,19 @@ class AvailabilityBlock(BaseModel):
     start: datetime
     end: datetime
     title: str
+    parallel_duels: int | None = None
+    panel_size: int | None = None
+    reserve: int | None = None
+    max_voters: int | None = Field(default=None, ge=0)
+    assigned: int | None = Field(default=None, ge=0)
+    available: int | None = Field(default=None, ge=0)
+
+
+class ScheduledGame(BaseModel):
+    id: str
+    start: datetime
+    end: datetime | None = None
+    title: str | None = None
 
 
 class Competition(BaseModel):
@@ -53,6 +66,11 @@ class Competition(BaseModel):
     open_roles: dict[Role, bool]          # Entry is Open по ролям (из Django Admin)
     deadlines: dict[Role, datetime]       # сроки закрытия по ролям
     availability_blocks: list[AvailabilityBlock] = Field(default_factory=list)
+    starts_at: datetime | None = None
+    mode: str = ""
+    review_demo: bool = False
+    days: list[date] = Field(default_factory=list)
+    games: list[ScheduledGame] = Field(default_factory=list)
 
 
 class Profile(BaseModel):
@@ -97,6 +115,7 @@ class TeamStatus(str, Enum):
 
 class Application(ApplicationIn):
     id: str
+    judge_scores: dict[str, float] = Field(default_factory=dict)
     status: ApplicationStatus = ApplicationStatus.RECEIVED
     team_status: TeamStatus | None = None
     created_at: datetime

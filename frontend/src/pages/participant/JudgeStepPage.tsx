@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { Note } from '@/components/ui/Note';
-import { Checkbox } from '@/components/ui/Checkbox';
 import { useApp } from '@/state/AppContext';
 import { useApplicationDraft } from '@/hooks/useApplicationDraft';
 import { buildForm } from './draft';
@@ -25,6 +24,7 @@ export function JudgeStepPage() {
   const draft = useApplicationDraft(id, 'judge');
 
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [selected, setSelected] = useState<string[]>(draft?.availabilityBlockIds ?? []);
   const [position, setPosition] = useState(draft?.form?.position ?? profile?.position ?? '');
   const [company, setCompany] = useState(draft?.form?.company ?? profile?.company ?? '');
@@ -32,16 +32,18 @@ export function JudgeStepPage() {
 
   useEffect(() => {
     let alive = true;
+    setLoadError(false);
+    setTournament(null);
     void api.getTournament(id ?? '').then((t) => {
-      if (alive) setTournament(t ?? null);
-    });
+      if (alive) { setTournament(t ?? null); setLoadError(!t); }
+    }).catch(() => { if (alive) setLoadError(true); });
     return () => {
       alive = false;
     };
   }, [id]);
 
   const blocks = tournament?.availabilityBlocks ?? [];
-  const noBlocks = tournament !== null && blocks.length === 0;
+  const selectedBlocks = blocks.filter(b => selected.includes(b.id)).map(b => b.id);
 
   function toggle(blockId: string, checked: boolean) {
     setSelected((prev) => (checked ? [...prev, blockId] : prev.filter((x) => x !== blockId)));
@@ -49,7 +51,7 @@ export function JudgeStepPage() {
 
   function handleNext() {
     const errs: Record<string, string> = {};
-    if (selected.length === 0) errs.blocks = 'Отметьте хотя бы один блок доступности';
+    if (selectedBlocks.length === 0) errs.blocks = 'Отметьте хотя бы один блок доступности';
     if (!position.trim()) errs.position = 'Обязательное поле';
     if (!company.trim()) errs.company = 'Обязательное поле';
     setErrors(errs);
@@ -59,7 +61,7 @@ export function JudgeStepPage() {
       state: {
         role: 'judge',
         form: { ...buildForm(draft?.form, profile), position, company },
-        availabilityBlockIds: selected,
+        availabilityBlockIds: selectedBlocks,
         applicationId: draft?.applicationId,
         back,
       },
@@ -68,23 +70,22 @@ export function JudgeStepPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Судья · доступность" />
+      <ScreenHeader code="U6c" title="Судья · доступность" />
 
-      {noBlocks ? (
-        <Note variant="warn">
-          Судейские слоты ещё не открыты. «Регистрация временно недоступна»: без блоков доступности заявки
-          судей не принимаются; на стороне USN открытие регистрации судей без слотов блокируется.
-        </Note>
+      {loadError ? (
+        <Note variant="err">Не удалось загрузить блоки судей.</Note>
+      ) : !tournament ? (
+        <Note variant="info">Загружаем блоки судей…</Note>
+      ) : blocks.length === 0 ? (
+        <Note variant="warn">Нет доступных блоков. Регистрация судей временно недоступна.</Note>
       ) : (
         <Card title="Когда вы готовы судить (UTC)">
+          <p className={styles.hint}>Отметьте хотя бы один блок · выбрано {selectedBlocks.length} из {blocks.length}</p>
           {blocks.map((b) => (
-            <Checkbox
-              key={b.id}
-              name={`block-${b.id}`}
-              label={`${b.time} · ${b.title}`}
-              checked={selected.includes(b.id)}
-              onChange={(checked) => toggle(b.id, checked)}
-            />
+            <label key={b.id} className={styles.block}>
+              <span><strong>{b.time}</strong><small>{b.title}</small></span>
+              <input type="checkbox" checked={selected.includes(b.id)} onChange={e => toggle(b.id, e.target.checked)} />
+            </label>
           ))}
           {errors.blocks && <p className={styles.hint} role="alert">{errors.blocks}</p>}
         </Card>
@@ -96,7 +97,7 @@ export function JudgeStepPage() {
       <p className={styles.hint}>Коллегию назначает Главный арбитр.</p>
 
       <div className={styles.actions}>
-        <Button onClick={handleNext} disabled={noBlocks} arrow>
+        <Button onClick={handleNext} disabled={blocks.length === 0} arrow>
           Далее
         </Button>
         <Button variant="soft" to={draft?.back ?? `/tournament/${id}/register`} arrowLeft>

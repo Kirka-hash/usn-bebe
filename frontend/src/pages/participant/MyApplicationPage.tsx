@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { Application } from '@/types';
 import { ROLE_LABELS, STATUS_LABELS } from '@/data/mock';
 import { blockWord, playerWord } from '@/utils/judges';
@@ -36,7 +36,9 @@ export function MyApplicationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { applications, updateApplication, tournaments } = useApp();
-  const application = applications.find((a) => a.tournamentId === id && a.status !== 'withdrawn');
+  const [params, setParams] = useSearchParams();
+  const active = applications.filter(a => a.tournamentId === id && a.status !== 'withdrawn');
+  const application = active.find(a => a.role === params.get('role')) ?? active[0];
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export function MyApplicationPage() {
   if (!application) {
     return (
       <Screen>
-        <ScreenHeader title="Моя заявка" />
+        <ScreenHeader code="U8" title="Моя заявка" />
         <Note variant="err">Заявка не найдена. Возможно, вы её отозвали.</Note>
         <div className={styles.actions}>
           <Button variant="soft" to={`/tournament/${id}`} arrowLeft>
@@ -63,6 +65,7 @@ export function MyApplicationPage() {
   const canBecomeSecond =
     application.role === 'player' &&
     tournament?.format === 'classic' &&
+    !active.some(a => a.role === 'second') &&
     Boolean(tournament?.roleWindows.find((w) => w.role === 'second')?.open);
 
   /**
@@ -96,7 +99,12 @@ export function MyApplicationPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Моя заявка" />
+      <ScreenHeader code="U8" title="Моя заявка" />
+
+      {active.length > 1 && <div className={styles.actions}>
+        {active.map(item => <Button key={item.id} variant={item.id === application.id ? 'primary' : 'outline'}
+          onClick={() => setParams({ role: item.role })}>{ROLE_LABELS[item.role]}</Button>)}
+      </div>}
 
       {application.status === 'received' && (
         <Note variant="success">
@@ -153,9 +161,9 @@ export function MyApplicationPage() {
         </div>
       )}
 
-      <Note variant="info">
-        Если роль закрыта: «Регистрация закрыта — изменения через организатора», кнопки редактирования скрыты.
-      </Note>
+      {!roleOpen && application.status === 'received' && (
+        <Note variant="info">Регистрация закрыта. За изменениями обратитесь к организатору.</Note>
+      )}
 
       {application.status === 'confirmed' && (
         <Note variant="info">Заявка подтверждена — мы ждём вас на турнире.</Note>

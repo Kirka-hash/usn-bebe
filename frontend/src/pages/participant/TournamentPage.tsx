@@ -41,7 +41,7 @@ export function TournamentPage() {
   if (loading) {
     return (
       <Screen>
-        <ScreenHeader title="Карточка турнира" />
+        <ScreenHeader code="U3" title="Карточка турнира" />
         <Note variant="info">Загрузка турнира…</Note>
       </Screen>
     );
@@ -50,7 +50,7 @@ export function TournamentPage() {
   if (!tournament) {
     return (
       <Screen>
-        <ScreenHeader title="Карточка турнира" />
+        <ScreenHeader code="U3" title="Карточка турнира" />
         <Note variant="err">Турнир не найден.</Note>
         <div className={styles.actions}>
           <Button variant="soft" to="/" arrowLeft>
@@ -63,7 +63,7 @@ export function TournamentPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Карточка турнира" />
+      <ScreenHeader code="U3" title="Карточка турнира" />
 
       <Card title={tournament.name} tone="text">
         {tournament.description.split('\n').map((line) => (
@@ -76,8 +76,8 @@ export function TournamentPage() {
           <CardText key={w.role}>
             {`• ${ROLE_LABELS[w.role]} — ${
               w.open
-                ? `открыта до ${w.deadline}${w.note ? ` (${w.note})` : ''}`
-                : `закрыта${w.closedReason ? `: ${w.closedReason.toLowerCase()}` : ''}`
+                ? `открыта${w.deadline ? ` до ${w.deadline}` : ''}${w.note ? ` (${w.note})` : ''}`
+                : w.closedReason === 'Только для классики' ? 'только для классики' : 'регистрация закрыта'
             }`}
           </CardText>
         ))}
@@ -86,7 +86,7 @@ export function TournamentPage() {
       {application ? (
         <>
           <Note variant="info">
-            Состояние Б: заявка уже есть (роль: {ROLE_LABELS[application.role]}, статус «
+            Заявка уже есть (роль: {ROLE_LABELS[application.role]}, статус «
             {STATUS_LABELS[application.status]}»)
           </Note>
           <div className={styles.actions}>
@@ -97,7 +97,6 @@ export function TournamentPage() {
         </>
       ) : (
         <>
-          <Note variant="info">Состояние А: заявки нет</Note>
           <div className={styles.actions}>
             <Button to={`/tournament/${tournament.id}/register`} arrow>
               Зарегистрироваться

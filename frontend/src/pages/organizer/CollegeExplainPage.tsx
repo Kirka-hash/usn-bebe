@@ -95,7 +95,7 @@ export function CollegeExplainPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Почему ИИ так предложил" />
+      <ScreenHeader code="O4a" title="Почему ИИ так предложил" />
 
       <Card title={`${shortJudgeId(judgeId)} → «${collegeTitle}», ${duelShort}`}>
         <p className={styles.reason}>

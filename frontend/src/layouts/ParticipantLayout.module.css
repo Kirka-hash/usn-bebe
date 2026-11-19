@@ -1,13 +1,19 @@
 .participant {
   display: flex;
   justify-content: center;
-  padding: 24px 16px 48px;
+  padding: 0 16px 48px;
 }
 
 .column {
   width: 100%;
-  max-width: 430px;
+  max-width: 390px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.column > :first-child {
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }

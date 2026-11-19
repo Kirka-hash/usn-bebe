@@ -1,3 +1,4 @@
+import { ReviewPage } from "./ReviewPage";
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -34,6 +35,14 @@ interface PlanRow {
  * ИИ не назначает сам: Принять / Изменить / Пересчитать.
  */
 export function CollegesPage() {
+  const { id = '' } = useParams<{ id: string }>();
+  const { tournaments } = useApp();
+  return tournaments.find(t => t.id === id)?.availabilityBlocks.some(b => b.parallelDuels > 0)
+    ? <ReviewPage key={id} view="colleges" />
+    : <LegacyCollegesPage />;
+}
+
+function LegacyCollegesPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { tournaments } = useApp();
   const tournament = tournaments.find((t) => t.id === id);
@@ -102,7 +111,7 @@ export function CollegesPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Коллегии — предложение ИИ" />
+      <ScreenHeader code="O4" title="Коллегии — предложение ИИ" />
       <p className={styles.subtitle}>{tournament?.name ?? ''}</p>
 
       <OrganizerTabs tournamentId={id} active="colleges" />
@@ -137,7 +146,7 @@ export function CollegesPage() {
 
       {accepted && !recalculatedAt && (
         <Note variant="info">
-          Назначение сохранено. Уведомления судьям отправляются через USN; в LLM уходят только обезличенные ID.
+          Распределение утверждено в прототипе.
         </Note>
       )}
 

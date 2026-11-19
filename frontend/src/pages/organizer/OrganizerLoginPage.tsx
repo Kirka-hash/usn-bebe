@@ -5,15 +5,13 @@ import { Button } from '@/components/ui/Button';
 import { Note } from '@/components/ui/Note';
 import { Field } from '@/components/ui/Field';
 import { useApp } from '@/state/AppContext';
-import { DEMO_ORGANIZER } from '@/services/api';
 import styles from './OrganizerLoginPage.module.css';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Вход организатора.
- * Демо-версия: локальная проверка демо-аккаунта, без сети — production-аутентификация
- * подключается на backend. Демо-доступ показан на экране явно.
+ * Вход проверяет бэкенд.
  */
 export function OrganizerLoginPage() {
   const navigate = useNavigate();
@@ -81,16 +79,11 @@ export function OrganizerLoginPage() {
             type="password"
             autoComplete="current-password"
             mark
-            placeholder="пароль демо-доступа"
+            placeholder="Пароль организатора"
             value={password}
             onChange={setPassword}
             error={fieldErrors.password}
           />
-
-          <Note variant="info">
-            Демо-доступ: {DEMO_ORGANIZER.email} · пароль «organizer». Это не production-аутентификация —
-            реальный вход подключается на backend.
-          </Note>
 
           {formError && <Note variant="err">{formError}</Note>}
 

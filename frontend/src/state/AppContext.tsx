@@ -15,6 +15,7 @@ interface AppState {
   /** Демо-сессия организатора (null — организатор не вошёл) */
   organizerAuth: OrganizerAuth | null;
   login: (email: string, code: string, lastName?: string, firstName?: string) => Promise<Profile>;
+  logout: () => Promise<void>;
   updateProfile: (patch: Partial<ApplicationForm>) => Promise<Profile>;
   addApplication: (application: Application) => void;
   updateApplication: (application: Application) => void;
@@ -37,12 +38,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     setLoadError(null);
-    const [p, apps, entries, ts, org] = await Promise.all([
+    const [p, ts, org] = await Promise.all([
       api.getProfile(),
-      api.getApplications(),
-      api.getOrganizerApplications(),
       api.getTournaments(),
       api.getOrganizerAuth(),
+    ]);
+    const [apps, entries] = await Promise.all([
+      api.getApplications(),
+      org ? api.getOrganizerApplications() : Promise.resolve([]),
     ]);
     setProfile(p); setApplications(apps); setOrganizerEntries(entries);
     setTournaments(ts); setOrganizerAuth(org);
@@ -60,6 +63,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return p;
   }, []);
 
+  const logout = useCallback(async () => {
+    try { await api.logout(); }
+    finally { setProfile(null); setApplications([]); }
+  }, []);
+
   const updateProfile = useCallback(async (patch: Partial<ApplicationForm>) => {
     const p = await api.saveProfile(patch);
     setProfile(p);
@@ -68,8 +76,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addApplication = useCallback((application: Application) => {
     setApplications((prev) => [...prev.filter((a) => a.id !== application.id), application]);
-    setOrganizerEntries((prev) => [...prev.filter((a) => a.id !== application.id), application]);
-  }, []);
+    setOrganizerEntries((prev) => organizerAuth ? [...prev.filter((a) => a.id !== application.id), application] : prev);
+  }, [organizerAuth]);
 
   const updateApplication = useCallback((application: Application) => {
     setApplications((prev) => prev.map((a) => (a.id === application.id ? application : a)));
@@ -84,12 +92,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const organizerLogin = useCallback(async (email: string, password: string) => {
     const auth = await api.organizerLogin(email, password);
+    setOrganizerEntries(await api.getOrganizerApplications());
     setOrganizerAuth(auth);
     return auth;
   }, []);
 
   const organizerLogout = useCallback(() => {
-    api.organizerLogout();
+    void api.organizerLogout().catch(() => {});
+    setOrganizerEntries([]);
     setOrganizerAuth(null);
   }, []);
 
@@ -102,6 +112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       tournaments,
       organizerAuth,
       login,
+      logout,
       updateProfile,
       addApplication,
       updateApplication,
@@ -110,7 +121,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       organizerLogout,
       refresh,
     }),
-    [ready, profile, applications, organizerEntries, tournaments, organizerAuth, login, updateProfile, addApplication, updateApplication, setEntryStatus, organizerLogin, organizerLogout, refresh],
+    [ready, profile, applications, organizerEntries, tournaments, organizerAuth, login, logout, updateProfile, addApplication, updateApplication, setEntryStatus, organizerLogin, organizerLogout, refresh],
   );
 
   // Экраны правки заявки строят начальное состояние из загруженных данных,

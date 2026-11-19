@@ -62,7 +62,7 @@ export function ApplicationDetailsPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Анкета участника" />
+      <ScreenHeader code="U5" title="Анкета участника" />
 
       <Field label="Фамилия" name="lastName" mark required autoComplete="family-name" value={form.lastName} onChange={set('lastName')} error={errors.lastName} />
       <Field label="Имя" name="firstName" mark required autoComplete="given-name" value={form.firstName} onChange={set('firstName')} error={errors.firstName} />

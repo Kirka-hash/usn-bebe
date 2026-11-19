@@ -1,3 +1,4 @@
+import { ReviewPage } from "./ReviewPage";
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -29,6 +30,14 @@ type VariantState = Record<string, { applied: boolean; invited: boolean }>;
  * Каждый кандидат — с причиной; текст приглашения готов, организатор отправляет сам.
  */
 export function IssuesPage() {
+  const { id = '' } = useParams<{ id: string }>();
+  const { tournaments } = useApp();
+  return tournaments.find(t => t.id === id)?.availabilityBlocks.some(b => b.parallelDuels > 0)
+    ? <ReviewPage key={id} view="issues" />
+    : <LegacyIssuesPage />;
+}
+
+function LegacyIssuesPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { tournaments } = useApp();
   const tournament = tournaments.find((t) => t.id === id);
@@ -92,7 +101,7 @@ export function IssuesPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Проблемные поединки — варианты ИИ" />
+      <ScreenHeader code="O5" title="Проблемные поединки — варианты ИИ" />
       <p className={styles.subtitle}>{tournament?.name ?? ''}</p>
 
       <OrganizerTabs tournamentId={id} active="issues" />

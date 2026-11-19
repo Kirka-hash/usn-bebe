@@ -45,7 +45,7 @@ export function PartnerStepPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Игрок · напарник (командный формат)" />
+      <ScreenHeader code="U6a" title="Игрок · напарник (командный формат)" />
 
       <Field
         label="Кто ваш напарник по команде"

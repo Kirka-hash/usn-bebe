@@ -29,7 +29,7 @@ export function draftFromApplication(application: Application): ApplicationDraft
     secondingPlayerIds: [...application.secondingPlayerIds],
     availabilityBlockIds: [...application.availabilityBlockIds],
     applicationId: application.id,
-    back: `/tournament/${application.tournamentId}/application`,
+    back: `/tournament/${application.tournamentId}/application?role=${application.role}`,
   };
 }
 

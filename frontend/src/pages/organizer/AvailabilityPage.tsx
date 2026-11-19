@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Application } from '@/types';
 import { JUDGE_AVAILABILITY, JUDGE_ROSTER } from '@/data/mock';
@@ -41,6 +41,7 @@ function pluralJudges(n: number): string {
  * Клик по красному → разбор дефицита.
  */
 export function AvailabilityPage() {
+  const [showAll, setShowAll] = useState(false);
   const { id = '' } = useParams<{ id: string }>();
   const { tournaments, organizerEntries } = useApp();
   const tournament = tournaments.find((t) => t.id === id);
@@ -49,7 +50,7 @@ export function AvailabilityPage() {
   const judgeEntries = useMemo(
     () =>
       organizerEntries.filter(
-        (a) => a.tournamentId === id && a.role === 'judge' && a.status !== 'withdrawn',
+        (a) => a.tournamentId === id && a.role === 'judge' && a.status !== 'withdrawn' && a.status !== 'rejected',
       ),
     [organizerEntries, id],
   );
@@ -57,7 +58,7 @@ export function AvailabilityPage() {
   if (!tournament) {
     return (
       <Screen>
-        <ScreenHeader title="Карта доступности судей" />
+        <ScreenHeader code="O3" title="Карта доступности судей" />
         <Note variant="err">Турнир не найден.</Note>
       </Screen>
     );
@@ -91,7 +92,7 @@ export function AvailabilityPage() {
     return [...rosterRows, ...userRows];
   })();
 
-  const listed = matrixRows.slice(0, MAX_LISTED_ROWS);
+  const listed = [...matrixRows].sort((a, b) => Number(a.id.startsWith('review-')) - Number(b.id.startsWith('review-'))).slice(0, showAll ? matrixRows.length : MAX_LISTED_ROWS);
   const hiddenCount = Math.max(0, matrixRows.length - listed.length);
 
   const summary = (blockId: string): Summary => {
@@ -100,7 +101,7 @@ export function AvailabilityPage() {
     // Состав задаёт организатор (9/7 + резерв в классике, 5+1 в экспрессе)
     const need = block ? block.parallelDuels * (block.panelSize + block.reserve) : 0;
     const resolved: Summary['state'] = !block?.parallelDuels ? 'unknown' :
-      available < need ? 'lack' : available <= need ? 'warn' : 'ok';
+      available < block.parallelDuels * block.panelSize ? 'lack' : available < need ? 'warn' : 'ok';
     return { available, need, state: resolved, text: `${available} / ${resolved === 'unknown' ? '—' : need}` };
   };
 
@@ -109,10 +110,10 @@ export function AvailabilityPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Карта доступности судей" subtitle={tournament.name} />
+      <ScreenHeader code="O3" title="Карта доступности судей" subtitle={tournament.name} />
 
       <OrganizerTabs tournamentId={id} active="availability" />
-      <Note variant="info">Число судей «нужно» появится после передачи расписания и нормы резерва из USN.</Note>
+      {blocks.some(b => !b.parallelDuels) && <Note variant="info">Число судей «нужно» появится после передачи расписания и нормы резерва из USN.</Note> }
 
       {blocks.length === 0 ? (
         <Note variant="warn">
@@ -155,7 +156,7 @@ export function AvailabilityPage() {
               {hiddenCount > 0 && (
                 <tr>
                   <td colSpan={blocks.length + 1} className={styles.moreRow}>
-                    … ещё {hiddenCount} {pluralJudges(hiddenCount)}
+                    <Button variant="soft" onClick={() => setShowAll(true)}>Показать ещё {hiddenCount} {pluralJudges(hiddenCount)}</Button>
                   </td>
                 </tr>
               )}

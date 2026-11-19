@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { Tournament } from '@/types';
 import * as api from '@/services/api';
 import { Screen, ScreenHeader } from '@/components/ui/Screen';
@@ -49,16 +49,20 @@ export function SecondStepPage() {
   }
 
   function handleNext() {
-    if (selected.length === 0) return;
+    if (tournament?.format !== 'classic' || selected.length === 0) return;
     const back = `/tournament/${id}/apply/second?role=second`;
     navigate(`/tournament/${id}/apply/details?role=${role}`, {
       state: { role, secondingPlayerIds: selected, form: draft?.form, applicationId: draft?.applicationId, back },
     });
   }
 
+  if (tournament && tournament.format !== 'classic') {
+    return <Navigate to={`/tournament/${id}/register`} replace />;
+  }
+
   return (
     <Screen>
-      <ScreenHeader title="Секундант · кому секундирую" />
+      <ScreenHeader code="U6b" title="Секундант · кому секундирую" />
 
       <Field
         label="Кому вы секундируете"
@@ -92,10 +96,6 @@ export function SecondStepPage() {
       <Note variant="info">
         Игрока нет в списке? Попросите его сначала зарегистрироваться на турнир как игрок.
       </Note>
-
-      {tournament && tournament.format !== 'classic' && (
-        <Note variant="err">Секундант доступен только в классическом формате.</Note>
-      )}
 
       <div className={styles.actions}>
         <Button onClick={handleNext} disabled={selected.length === 0} arrow>

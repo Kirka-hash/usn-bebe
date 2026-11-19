@@ -65,7 +65,7 @@ export function MyTournamentsPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Мои турниры" />
+      <ScreenHeader code="U9" title="Мои турниры" />
       {invitations.map(i => <Card key={`${i.tournamentId}-${i.inviterId}`} title="Приглашение в команду">
         <p>{i.inviterName} указал вас напарником.</p>
         <Button to={`/tournament/${i.tournamentId}/team-invitation`} arrow>Ответить</Button>
@@ -76,11 +76,6 @@ export function MyTournamentsPage() {
           <Note variant="info">
             Заявок пока нет. {profile?.filled ? 'Выберите турнир и подайте заявку.' : 'Заполните профиль и выберите турнир.'}
           </Note>
-          <div className={styles.actions}>
-            <Button to="/" arrow>
-              Найти турниры
-            </Button>
-          </div>
         </>
       ) : (
         grouped.map(([tournamentId, apps]) => {

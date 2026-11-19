@@ -27,6 +27,7 @@ export interface Tournament {
   /** Время начала по UTC, «06:00 UTC» */
   timeUtc: string;
   /** Формат проведения, «онлайн (Zoom)» */
+  reviewDemo?: boolean;
   mode: string;
   /** Полное описание для карточки турнира (U3) */
   description: string;
@@ -72,6 +73,8 @@ export interface Application {
   teamStatus?: 'awaiting' | 'confirmed' | 'declined';
   /** Анкетные данные (копия профиля на момент отправки) */
   form: ApplicationForm;
+  email?: string;
+  judgeScores?: Record<string, number>;
   /** Напарник (U6a, командный формат) */
   partnerId?: string;
   /** Кому секундирую (U6b, классика) */

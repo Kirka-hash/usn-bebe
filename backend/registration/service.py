@@ -41,7 +41,7 @@ class RegistrationService:
             current = same_role[0]
             app = Application(
                 **data.model_dump(), id=current.id, status=current.status,
-                team_status=current.team_status, created_at=current.created_at, updated_at=now,
+                team_status=current.team_status, judge_scores=current.judge_scores, created_at=current.created_at, updated_at=now,
             )
             # Сменил напарника — прежнему напарнику команда больше не подтверждена.
             if is_team and current.partner_user_id and current.partner_user_id != data.partner_user_id:

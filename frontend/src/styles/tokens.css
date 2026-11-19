@@ -1,25 +1,21 @@
-/**
- * Дизайн-токены платформы USN.
- * Источник: прототип Figma «Поэкранная разбивка» (файл-копия k3Z73pdjXxpqPOzJ1miv42).
- * Все значения выверены по коду фреймов Figma, не «примерно».
- */
-
+/* Палитра по видимым экранам USN_design. */
 :root {
   /* Цвета */
   --color-surface: #ffffff; /* карточки, инпуты, таблицы */
-  --color-screen: #f7f7fa; /* фон экрана-контейнера */
-  --color-page: #e9eaee; /* фон страницы вокруг экрана */
-  --color-border: #dbdee5; /* границы карточек и инпутов */
+  --color-screen: #f4f7fc; /* фон экрана-контейнера */
+  --color-page: #e9ebf4; /* фон страницы вокруг экрана */
+  --color-border: #e1e7f0; /* границы карточек и инпутов */
   --color-ink: #171c29; /* основной текст */
   --color-ink-secondary: #6b7380; /* вторичный текст */
-  --color-navy: #1c336b; /* акцент: кнопки, ссылки, шапки таблиц */
-  --color-navy-soft: #e5edfc; /* голубая плашка / soft-кнопка */
+  --color-navy: #4d58d8; /* акцент: кнопки, ссылки, шапки таблиц */
+  --color-brand-mark: #5864e8;
+  --color-navy-soft: #eaf0ff; /* голубая плашка / soft-кнопка */
   --color-green-bg: #e5f7eb; /* чип «роль открыта» */
   --color-green-text: #218c4d;
   --color-gray-bg: #ededf0; /* чип «недоступно» / disabled */
-  --color-warn-bg: #fff2b8; /* предупреждение */
+  --color-warn-bg: #fff7e1; /* предупреждение */
   --color-warn-text: #8c6b00;
-  --color-err-bg: #fcebeb; /* ошибка */
+  --color-err-bg: #fff0f0; /* ошибка */
   --color-err-text: #d93333;
 
   /* Типографика (Inter, leading normal, как в макете) */

@@ -29,7 +29,7 @@ export function ConsentsPage() {
   const [personal, setPersonal] = useState(false);
   const [media, setMedia] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   const allChecked = rules && personal && media;
   const hasForm = Boolean(draft?.form);
@@ -53,12 +53,12 @@ export function ConsentsPage() {
       } else {
         addApplication(application);
       }
-      navigate(`/tournament/${id}/application`, { replace: true });
+      navigate(`/tournament/${id}/application?role=${role}`, { replace: true });
     } catch (e) {
       if (e instanceof ApiError) {
-        setError(e.message);
+        setError(e);
       } else {
-        setError('Сервер недоступен. Попробуйте ещё раз.');
+        setError(new ApiError('unavailable', 'Сервер недоступен. Попробуйте ещё раз.'));
       }
     } finally {
       setSubmitting(false);
@@ -68,7 +68,7 @@ export function ConsentsPage() {
   if (!hasForm) {
     return (
       <Screen>
-        <ScreenHeader title="Согласия и отправка" />
+        <ScreenHeader code="U7" title="Согласия и отправка" />
         <Note variant="err">
           Данные анкеты не найдены. Заполните анкету заново — заявка не отправлена.
         </Note>
@@ -86,7 +86,7 @@ export function ConsentsPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Согласия и отправка" />
+      <ScreenHeader code="U7" title="Согласия и отправка" />
 
       <Checkbox name="rules" label="Принимаю правила соревнований" checked={rules} onChange={setRules} />
       <Checkbox name="personal" label="Согласен на обработку персональных данных" checked={personal} onChange={setPersonal} />
@@ -100,7 +100,7 @@ export function ConsentsPage() {
 
       {error && (
         <>
-          <Note variant="err">{error}</Note>
+          <Note variant="err">{error.message}{error.code === 'role_unavailable' && ' Введённые данные остались в анкете.'}</Note>
           <div className={styles.actions}>
             <Button variant="dangerSoft" onClick={() => navigate(-1)} arrow>
               Вернуться к анкете
@@ -109,10 +109,10 @@ export function ConsentsPage() {
         </>
       )}
 
-      <Note variant="info">
+      {!error && <Note variant="info">
         Роль: {ROLE_LABELS[role]}. После отправки заявка появится со статусом «Получена»; её можно
         редактировать, пока регистрация в роли открыта.
-      </Note>
+      </Note>}
     </Screen>
   );
 }

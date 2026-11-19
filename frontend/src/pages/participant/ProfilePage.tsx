@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Note } from '@/components/ui/Note';
 import { Field } from '@/components/ui/Field';
 import type { ApplicationForm } from '@/types';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/state/AppContext';
 import styles from './ProfilePage.module.css';
 
@@ -12,7 +13,8 @@ import styles from './ProfilePage.module.css';
  * Обязательные для участия: Фамилия, Имя, Страна, Город. Остальное — опционально.
  */
 export function ProfilePage() {
-  const { profile, updateProfile } = useApp();
+  const { profile, updateProfile, logout } = useApp();
+  const navigate = useNavigate();
   const [form, setForm] = useState<ApplicationForm>({
     lastName: '',
     firstName: '',
@@ -73,7 +75,7 @@ export function ProfilePage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Профиль участника" />
+      <ScreenHeader code="U2a" title="Профиль участника" />
 
       <Field label="Фамилия" name="lastName" mark required autoComplete="family-name" value={form.lastName} onChange={set('lastName')} error={errors.lastName} />
       <Field label="Имя" name="firstName" mark required autoComplete="given-name" value={form.firstName} onChange={set('firstName')} error={errors.firstName} />
@@ -95,6 +97,9 @@ export function ProfilePage() {
         </Button>
         <Button variant="soft" to="/my-tournaments" arrow>
           Мои турниры
+        </Button>
+        <Button variant="soft" onClick={() => void logout().catch(() => {}).finally(() => navigate('/login', { replace: true }))}>
+          Выйти
         </Button>
       </div>
     </Screen>

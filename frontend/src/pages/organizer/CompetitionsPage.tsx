@@ -21,7 +21,7 @@ const FORMAT_LABELS: Record<Tournament['format'], string> = {
  * Создание нового турнира — форма «Новый турнир» в приложении.
  */
 export function CompetitionsPage() {
-  const { tournaments, organizerLogout } = useApp();
+  const { tournaments, organizerLogout, organizerEntries } = useApp();
 
   const columns: ReadonlyArray<DataTableColumn<Tournament>> = [
     { key: 'name', title: 'Соревнование', width: 300, render: (t) => t.name },
@@ -49,7 +49,9 @@ export function CompetitionsPage() {
       key: 'entries',
       title: 'Заявки (игр/суд/сек/зр)',
       width: 180,
-      render: (t) => (t.entryCounts ? t.entryCounts.join(' / ') : '—'),
+      render: (t) => (['player', 'judge', 'second', 'viewer'] as const)
+        .map(role => organizerEntries.filter(a => a.tournamentId === t.id && a.role === role && a.status !== 'withdrawn').length)
+        .join(' / '),
     },
     {
       key: 'actions',
@@ -57,7 +59,12 @@ export function CompetitionsPage() {
       width: 170,
       render: (t) => (
         <span className={styles.cellChips}>
-          {t.id === 'strategy-2026' && <Chip variant="red">3 проблемных</Chip>}
+          {t.availabilityBlocks.some(b => b.parallelDuels > 0) && (() => {
+            const deficit = t.availabilityBlocks.filter(b => b.parallelDuels > 0 && organizerEntries.filter(a =>
+              a.tournamentId === t.id && a.role === 'judge' && a.status !== 'withdrawn' &&
+              a.status !== 'rejected' && a.availabilityBlockIds.includes(b.id)).length < b.parallelDuels * b.panelSize).length;
+            return <Chip variant={deficit ? 'red' : 'green'}>{deficit ? `Дефицит: ${deficit}` : 'Судей хватает'}</Chip>;
+          })()}
           <Button variant="outline" to={`/organizer/competitions/${t.id}/entries`} arrow>
             Открыть
           </Button>
@@ -68,7 +75,7 @@ export function CompetitionsPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Соревнования" />
+      <ScreenHeader code="O1" title="Соревнования" />
 
       <div className={styles.topRow}>
         <Button variant="soft" onClick={organizerLogout}>

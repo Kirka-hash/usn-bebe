@@ -28,3 +28,19 @@
   font-size: var(--text-12);
   color: var(--color-ink-secondary);
 }
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.code {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  color: var(--color-navy);
+  background: var(--color-navy-soft);
+  border-radius: 6px;
+  font-size: var(--text-11);
+  font-weight: 600;
+}

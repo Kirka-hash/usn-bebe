@@ -24,7 +24,7 @@ class LogNotificationService:
 
     def send(self, to: str, subject: str, body: str) -> None:
         self.sent.append((to, subject, body))
-        if os.getenv("USN_MODE", "mock") == "mock":
+        if os.getenv("USN_MODE", "mock") in {"mock", "http"}:
             log.warning("DEMO email to %s: %s — %s", to, subject, body)
         else:
             log.info("notify %s: %s", to, subject)

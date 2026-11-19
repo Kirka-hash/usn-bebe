@@ -46,7 +46,7 @@ export function EntryCardPage() {
   if (!application) {
     return (
       <Screen>
-        <ScreenHeader title="Карточка участника" />
+        <ScreenHeader code="O2a" title="Карточка участника" />
         <Note variant="err">Заявка не найдена.</Note>
         <div className={styles.actions}>
           <Button variant="soft" to="/organizer" arrowLeft>
@@ -57,8 +57,18 @@ export function EntryCardPage() {
     );
   }
 
+  const { form } = application;
+  const fields: [string, string | undefined][] = [
+    ['Фамилия', form.lastName], ['Имя', form.firstName], ['Страна', form.country],
+    ['Город', form.city], ['Школа / клуб', form.club], ['Должность', form.position],
+    ['Компания', form.company], ['Как представить участникам', form.displayName],
+    ['Email', application.email], ['Телефон', form.phone], ['Telegram', form.telegram], ['VK', form.vk],
+  ];
+
+  const reviewScores = application.judgeScores;
+  const hasReviewScores = Boolean(reviewScores && Object.keys(reviewScores).length);
   const judgeData =
-    application?.role === 'judge' && application.publicId
+    !hasReviewScores && application?.role === 'judge' && application.publicId
       ? judgeScoresFor(application.publicId)
       : undefined;
 
@@ -78,28 +88,46 @@ export function EntryCardPage() {
   const scoreColumns: ReadonlyArray<DataTableColumn<ScoreRow>> | null = scoreRows
     ? [
         { key: 'expert', title: 'Оценки экспертов', width: 200, render: (r) => r.expert },
-        ...COLLEGE_ORDER.map((cid) => ({
+        ...(tournament?.format === 'express' ? [] : COLLEGE_ORDER).map((cid) => ({
           key: cid,
           title: COLLEGE_SHORT[cid] ?? cid,
           width: 160,
           render: (r: ScoreRow) => (cid === 'c1' ? r.c1 : cid === 'c2' ? r.c2 : r.c3),
         })),
-        { key: 'express', title: EXPRESS_COLUMN_TITLE, width: 220, render: (r) => r.express },
+        ...(tournament?.format === 'express' ? [{
+          key: 'express', title: EXPRESS_COLUMN_TITLE, width: 220, render: (r: ScoreRow) => r.express,
+        }] : []),
       ]
     : null;
 
   return (
     <Screen>
-      <ScreenHeader title="Карточка участника" />
+      <ScreenHeader code="O2a" title="Карточка участника" />
 
       <Card title={`${displayName} · ${ROLE_LABELS[application.role]}`}>
-        <p className={styles.secondary}>
-          {application.form.city ? `${application.form.city} · ` : ''}
-          {application.form.club ? `${application.form.club} · ` : ''}
-          {application.form.position ?? ''}
-        </p>
         <Chip variant={STATUS_VARIANTS[application.status]}>{STATUS_LABELS[application.status]}</Chip>
       </Card>
+
+      <Card title="Анкета и контакты">
+        <dl className={styles.profile}>
+          {fields.filter(([, value]) => value?.trim()).map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </Card>
+
+      {hasReviewScores && reviewScores && (
+        <Card title="Учебные оценки для распределения">
+          <dl className={styles.profile}>
+            {([['hiring', 'c1'], ['sending', 'c2'], ['ownership', 'c3']] as const).map(([key, college]) => (
+              <div key={key}><dt>{COLLEGE_SHORT[college]}</dt><dd>{reviewScores[key]}</dd></div>
+            ))}
+          </dl>
+        </Card>
+      )}
 
       {judgeData && scoreColumns && scoreRows && (
         <DataTable columns={scoreColumns} rows={scoreRows} rowKey={(r) => r.expert} caption="Оценки экспертов" />

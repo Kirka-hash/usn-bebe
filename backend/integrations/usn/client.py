@@ -1,10 +1,4 @@
-"""Адаптер API USN (Django заказчика).
-
-Все обращения к системе заказчика идут только через этот модуль — ядро и
-Django Admin мы не трогаем. Сейчас работает MockUSNClient на демо-данных;
-HttpUSNClient — заглушка до получения доступа к тестовому стенду (SSH-ключи)
-и сверки методов Swagger проверочными вызовами.
-"""
+"""Контракт USN и локальное хранение заявок и профилей для прототипа."""
 from __future__ import annotations
 
 import json
@@ -25,21 +19,12 @@ class USNClient(Protocol):
     def list_players(self, search: str = "") -> list[Profile]: ...
 
 
-class MockUSNClient:
-    """In-memory имитация API USN. Данные — data/sample/competition_demo.json (синтетика)."""
+class LocalApplicationStore:
+    """Хранит заявки и профили в памяти для обоих режимов прототипа."""
 
-    def __init__(self, sample_path: Path | None = None):
-        path = sample_path or Path(__file__).resolve().parents[3] / "data" / "sample" / "competition_demo.json"
-        raw = json.loads(path.read_text(encoding="utf-8"))
-        self._competitions = {c["id"]: Competition(**c) for c in raw["competitions"]}
+    def __init__(self):
         self._applications: dict[str, Application] = {}
         self._profiles: dict[str, Profile] = {}
-
-    def list_competitions(self) -> list[Competition]:
-        return list(self._competitions.values())
-
-    def get_competition(self, competition_id: str) -> Competition:
-        return self._competitions[competition_id]
 
     def list_applications(self, competition_id: str) -> list[Application]:
         return [a for a in self._applications.values() if a.competition_id == competition_id]
@@ -67,15 +52,21 @@ class MockUSNClient:
                 and query in f"{p.last_name} {p.first_name} {p.city}".lower()]
 
 
-class HttpUSNClient:
-    """ЗАГЛУШКА. Реальный клиент к API USN (Basic Auth из .env).
+class MockUSNClient(LocalApplicationStore):
+    """In-memory имитация API USN. Данные — data/sample/competition_demo.json (синтетика)."""
 
-    TODO (спринт 3, Тимофей): сопоставить методы Swagger со сценариями вызовами;
-    недостающее (статусы, связи заявок, сохранение коллегий) — запросом заказчику.
-    """
+    def __init__(self, sample_path: Path | None = None, *, review_demo: bool = False):
+        path = sample_path or Path(__file__).resolve().parents[3] / "data" / "sample" / "competition_demo.json"
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        self._competitions = {c["id"]: Competition(**c) for c in raw["competitions"]}
+        super().__init__()
+        if sample_path is None and review_demo:
+            from backend.judging.review import REVIEW_ID, seed_review
 
-    def __init__(self, base_url: str, user: str, password: str):
-        self.base_url, self.user, self.password = base_url, user, password
+            self._competitions[REVIEW_ID] = seed_review(self, self._competitions[REVIEW_ID])
 
-    def __getattr__(self, name):
-        raise NotImplementedError(f"HttpUSNClient.{name}: ждём доступ к тестовому стенду USN")
+    def list_competitions(self) -> list[Competition]:
+        return list(self._competitions.values())
+
+    def get_competition(self, competition_id: str) -> Competition:
+        return self._competitions[competition_id]

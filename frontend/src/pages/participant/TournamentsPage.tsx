@@ -9,12 +9,12 @@ import { Card } from '@/components/ui/Card';
 import { Note } from '@/components/ui/Note';
 import styles from './TournamentsPage.module.css';
 
-function roleChipLabel(t: Tournament, role: (typeof t.roleWindows)[number]): { text: string; open: boolean } {
+function roleChipLabel(role: Tournament['roleWindows'][number]): string {
   const base = ROLE_LABELS[role.role];
   if (!role.open) {
-    return { text: role.closedReason ?? `${base}: регистрация закрыта`, open: false };
+    return `${role.role === 'player' ? 'Игроки' : base}: регистрация закрыта`;
   }
-  return { text: role.labelSuffix ? `${base} ${role.labelSuffix}` : base, open: true };
+  return [base, role.labelSuffix, role.deadline && `до ${role.deadline}`].filter(Boolean).join(' ');
 }
 
 /**
@@ -39,7 +39,7 @@ export function TournamentsPage() {
   if (error) {
     return (
       <Screen>
-        <ScreenHeader title="Турниры" />
+        <ScreenHeader code="U1" title="Турниры" />
         <Note variant="err">{error}</Note>
       </Screen>
     );
@@ -48,7 +48,7 @@ export function TournamentsPage() {
   if (!tournaments) {
     return (
       <Screen>
-        <ScreenHeader title="Турниры" />
+        <ScreenHeader code="U1" title="Турниры" />
         <p className={styles.loading}>Загрузка списка турниров…</p>
       </Screen>
     );
@@ -56,25 +56,23 @@ export function TournamentsPage() {
 
   return (
     <Screen>
-      <ScreenHeader title="Турниры" />
+      <ScreenHeader code="U1" title="Турниры" />
       <div className={styles.page}>
         <p className={styles.pageTitle}>USN · Чемпионат 2026</p>
-        <Button variant="outline" to="/login" arrow>
-          Войти
+        <Button variant="outline" to={api.isSignedIn() ? "/my-tournaments" : "/login"} arrow>
+          {api.isSignedIn() ? 'Мои турниры' : 'Войти'}
         </Button>
       </div>
       {tournaments.map((t) => {
-        const visible = t.roleWindows.filter((w) => w.open || w.closedReason);
+        const visible = t.roleWindows.filter(w => (w.open || w.closedReason) && (w.role !== 'second' || t.format === 'classic'));
         return (
           <Card key={t.id} title={t.name}>
             <p className={styles.meta}>
-              {t.dates} · {t.timeUtc}
-              {t.mode ? ` · ${t.mode}` : ''}
+              {[t.dates, t.timeUtc, t.mode].filter(value => value && value !== '—').join(' · ')}
             </p>
             <div className={styles.chips}>
               {visible.map((w) => {
-                const chip = roleChipLabel(t, w);
-                return <Chip key={w.role} variant={chip.open ? 'green' : 'gray'}>{chip.text}</Chip>;
+                return <Chip key={w.role} variant={w.open ? 'green' : 'gray'}>{roleChipLabel(w)}</Chip>;
               })}
             </div>
             <Button to={`/tournament/${t.id}`} arrow>

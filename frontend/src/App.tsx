@@ -37,6 +37,7 @@ export default function App() {
             <Route element={<ParticipantLayout />}>
               <Route path="/" element={<TournamentsPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/organizer/login" element={<OrganizerLoginPage />} />
               <Route path="/tournament/:id" element={<TournamentPage />} />
               <Route element={<RequireParticipant />}>
                 <Route path="/profile" element={<ProfilePage />} />
@@ -53,7 +54,6 @@ export default function App() {
             </Route>
 
             {/* Организатор (десктопный поток прототипа): вход и создание — общедоступные маршруты */}
-            <Route path="/organizer/login" element={<OrganizerLoginPage />} />
             <Route element={<RequireOrganizer />}>
               <Route path="/organizer" element={<OrganizerLayout />}>
                 <Route index element={<CompetitionsPage />} />
